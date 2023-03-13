@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "BethaLogs",
+  "version": "1.0",
+  "description": "Uma extensão para ajudar a facilitar o acesso as logs do sistema Betha.",
+  "background": {
+    "service_worker": "downloadHandler.js",
+    "type": "module"
+  },
+  "permissions": [
+    "downloads",
+    "tabs",
+    "scripting",
+    "activeTab"
+  ],
+  "icons": {
+    "512": "logo.png"
+  },
+  "host_permissions": ["<all_urls>"]
+}
