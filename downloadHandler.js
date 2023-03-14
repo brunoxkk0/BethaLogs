@@ -14,38 +14,37 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
             console.log("Download cancelado...")
         })
 
-    }
+        console.log("Tentando recuperar o texto do log.")
+        fetch(downloadItem.finalUrl, {redirect: "follow"})
+            .then((response) => response.blob())
+            .then(async (response) => {
 
-    console.log("Tentando recuperar o texto do log.")
-    fetch(downloadItem.finalUrl, {redirect: "follow"})
-        .then((response) => response.blob())
-        .then(async (response) => {
+                const reader = new FileReader();
 
-            const reader = new FileReader();
+                reader.onload = function() {
+                    // obtém o conteúdo da Blob em um ArrayBuffer
+                    const buffer = this.result;
 
-            reader.onload = function() {
-                // obtém o conteúdo da Blob em um ArrayBuffer
-                const buffer = this.result;
+                    const inflatedContent = inflate(buffer, {to: 'string'});
 
-                const inflatedContent = inflate(buffer, {to: 'string'});
+                    chrome.tabs.create({url: "./log.html"}).then((tab) => {
 
-                chrome.tabs.create({url: "./log.html"}).then((tab) => {
-
-                    chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
-                        if(tab.id === tabId){
-                            if(changeInfo.status && changeInfo.status === 'complete'){
-                                const channel = new BroadcastChannel("betha-logs-fix");
-                                channel.postMessage(inflatedContent)
+                        chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+                            if(tab.id === tabId){
+                                if(changeInfo.status && changeInfo.status === 'complete'){
+                                    const channel = new BroadcastChannel("betha-logs-fix");
+                                    channel.postMessage(inflatedContent)
+                                }
                             }
-                        }
+                        })
+
                     })
 
-                })
+                }
 
-            }
+                reader.readAsArrayBuffer(response);
 
-            reader.readAsArrayBuffer(response);
+            })
 
-        })
-
+    }
 })
