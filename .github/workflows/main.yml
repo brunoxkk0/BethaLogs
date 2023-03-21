@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - name: Clonando projeto.
+      uses: actions/checkout@v3
     
     - name: Criando ZIP
       run: zip -r dist.zip .
@@ -17,8 +18,5 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: dev-${{ github.sha }}
-        prerelease: false
-        name: Dev build ${{ github.sha }}
-        files: |
-          dist.zip
+        name: Release
+        files: dist.zip
