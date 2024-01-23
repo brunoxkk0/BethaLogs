@@ -48,3 +48,11 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
 
     }
 })
+
+chrome.downloads.onDeterminingFilename.addListener(async (downloadItem) => {
+    if (downloadItem.finalUrl.includes("logs/logs.txt.gz")) {
+        chrome.downloads.cancel(downloadItem.id, () => {
+            console.log("Download cancelado...")
+        })
+    }
+})
