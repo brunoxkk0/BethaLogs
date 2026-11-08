@@ -16,7 +16,14 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
 
         console.log("Tentando recuperar o texto do log.")
         fetch(downloadItem.finalUrl, {redirect: "follow"})
-            .then((response) => response.blob())
+            .then((response) => {
+                // URL já consumida (ex.: IDM interceptou) ou sessão expirada devolve HTML/erro em vez do .gz
+                const type = response.headers.get("content-type") || "";
+                if (!response.ok || type.includes("text/html")) {
+                    throw new Error(`Resposta inválida do log: ${response.status} ${type}`);
+                }
+                return response.blob();
+            })
             .then(async (response) => {
 
                 const reader = new FileReader();
@@ -25,8 +32,17 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
                     // transforma ArrayBuffer em Uint8Array
                     const buffer = new Uint8Array(this.result);
 
-                    // descompacta gzip -> string
-                    const inflatedContent = ungzip(buffer, {to: 'string'});
+                    // fetch pode já ter descompactado (Content-Encoding: gzip); só usa pako se houver header gzip (1f 8b)
+                    const isGzip = buffer[0] === 0x1f && buffer[1] === 0x8b;
+                    let inflatedContent;
+                    try {
+                        inflatedContent = isGzip
+                            ? ungzip(buffer, {to: 'string'})
+                            : new TextDecoder().decode(buffer);
+                    } catch (e) {
+                        console.error("Falha ao descompactar log:", e);
+                        return;
+                    }
 
                     chrome.tabs.create({url: "./log.html"}).then((tab) => {
 
@@ -46,6 +62,7 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
                 reader.readAsArrayBuffer(response);
 
             })
+            .catch((e) => console.error("Falha ao recuperar o log:", e))
 
     }
 })
