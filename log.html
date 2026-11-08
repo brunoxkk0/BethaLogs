@@ -3,9 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>Log de Execução</title>
+    <style>
+        body { margin: 0; background: #2b2b2b; color: #EDE4E0; font: 12px/1.5 monospace; }
+        #toolbar { position: sticky; top: 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+            padding: 8px 12px; background: #1e1e1e; border-bottom: 1px solid #444; }
+        #search { flex: 1; min-width: 200px; padding: 4px 8px; background: #333; color: inherit; border: 1px solid #555; border-radius: 4px; font: inherit; }
+        #toolbar label { cursor: pointer; user-select: none; }
+        #status { color: #9a9a9a; }
+        #log { padding: 4px 0; }
+        .line { display: flex; padding: 0 12px; white-space: pre-wrap; word-break: break-word; }
+        .line:hover { background: #363636; }
+        .ts { color: #7f8c98; flex: none; margin-right: 12px; user-select: none; }
+        .error > .msg { color: #ff8a80; font-weight: bold; }
+        .error { background: #3a2626; }
+        .stack { margin: 0 0 2px 0; }
+        .stack > summary { padding: 0 12px; color: #9a9a9a; cursor: pointer; }
+        .stack .line { color: #a8a8a8; }
+        .stack .app > .msg { color: #EDE4E0; }
+        mark { background: #c9a227; color: #000; }
+        .hidden { display: none !important; }
+    </style>
 </head>
-<body id="base-text" style="background-color: #333333; color: #EDE4E0; font-size: small; font-family: monospace">
-Carregando texto...
+<body>
+<div id="toolbar">
+    <input id="search" type="search" placeholder="Buscar no log..." aria-label="Buscar no log">
+    <label><input id="only-errors" type="checkbox"> Só erros</label>
+    <label><input id="expand" type="checkbox"> Expandir stack traces</label>
+    <span id="status" role="status">Carregando texto...</span>
+</div>
+<div id="log"></div>
 <script src="./log.js"></script>
 </body>
 </html>
