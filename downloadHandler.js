@@ -5,7 +5,10 @@ import {ungzip} from "https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.esm
 console.log("feito.")
 chrome.downloads.onCreated.addListener(async (downloadItem) => {
 
-    if (downloadItem.finalUrl.includes("logs/logs.txt.gz")) {
+    // Chrome reemite onCreated para itens antigos do histórico ao carregar a extensão; só trata downloads novos
+    const isNew = downloadItem.state === "in_progress" && Date.now() - new Date(downloadItem.startTime).getTime() < 60000;
+
+    if (isNew && downloadItem.finalUrl.includes("logs/logs.txt.gz")) {
 
         console.log("Download de log detectado....")
         console.log(downloadItem)
@@ -15,7 +18,8 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
         })
 
         console.log("Tentando recuperar o texto do log.")
-        fetch(downloadItem.finalUrl, {redirect: "follow"})
+        // url da Betha gera nova URL pré-assinada do S3 (finalUrl expira em 300s)
+        fetch(downloadItem.url, {redirect: "follow"})
             .then((response) => {
                 // URL já consumida (ex.: IDM interceptou) ou sessão expirada devolve HTML/erro em vez do .gz
                 const type = response.headers.get("content-type") || "";
